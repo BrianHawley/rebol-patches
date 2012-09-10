@@ -1,5 +1,12 @@
-REBOL [Title: "R3 Patches" Type: module]
-; Do any exports manually, at least until exporting is fixed
+REBOL [
+	Title: "R3 Patches"
+	Type: module
+	Author: "Brian Hawley" ; BrianH
+	Date: 10-Sep-2012
+	License: MIT
+]
+; Do any exports manually, at least until exporting is fixed.
+; This module isn't named so it won't be saved to system/modules.
 
 replace-export: func [
 	"Replace a value in lib and all tracable exports."
