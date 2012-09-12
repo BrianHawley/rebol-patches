@@ -41,9 +41,11 @@ if attempt [none? :tmp/2/36/3] [
 bind bind tmp/2 lib sys
 sys/load-ext-module: make function! tmp
 
+fix: false
 tmp: reduce [spec-of :sys/load-module body-of :sys/load-module]
 ; Workaround for resolve/extend/only crash (http://issue.cc/r3/1865)
 if attempt ['resolve/extend/only = :tmp/2/9/49/2/8/1] [
+	fix: true
 	tmp/2/9/49/2/8: [
 		resolve/only lib mod bind/new/only/copy hdr/exports lib
 	]
@@ -51,6 +53,7 @@ if attempt ['resolve/extend/only = :tmp/2/9/49/2/8/1] [
 ; Add multi-module support (http://issue.cc/r3/1877)
 unless find tmp/1 'end [append tmp/1 'end]
 if attempt [none? :tmp/2/11/6] [
+	fix: true
 	append tmp/2/7/12/5/7/8/2/2 [end:]
 	append tmp/2/7/12/5/7/8/5 [end:]
 	append tmp/2/7/12/5/7/8/12/2 [end:]
@@ -62,8 +65,10 @@ if attempt [none? :tmp/2/11/6] [
 	append last tmp/2 'end
 ]
 ; Remake the function
-bind bind tmp/2 lib sys
-sys/load-module: make function! tmp
+if fix [
+	bind bind tmp/2 lib sys
+	sys/load-module: make function! tmp
+]
 
 tmp: body-of :sys/export-words
 ; Workaround for resolve/extend/only crash (http://issue.cc/r3/1865)
@@ -83,7 +88,26 @@ if attempt ['to-binary = :tmp/4/5/2] [
 	replace-export script? make function! reduce [spec-of :lib/script? bind tmp lib]
 ]
 
+fix: false
+tmp: body-of :lib/save
+; Fix save/header where data true (http://issue.cc/r3/1907)
+if attempt ['block? = :tmp/11/8] [
+	fix: true
+	tmp/11/8: 'object?
+	tmp/11/9: tmp/11/10/2: tmp/11/11/2: to get-word! :tmp/11/9
+	swap at :tmp/11 10 at :tmp/11 11
+]
+; Fix save where any-function (http://issue.cc/r3/1908)
+if attempt [same? unbind 'value :tmp/4/6] [
+	fix: true
+	tmp/4/6: tmp/11/5/3/2/2: to get-word! :tmp/4/6
+	; Note: first+ can't take a get-word, but doesn't need to.
+]
+if fix [
+	replace-export save make function! reduce [spec-of :lib/save bind tmp lib]
+]
+
 ; TODO: Fixing decode-url (http://issue.cc/r3/1644)
 
 ; Unset local variables just in case this context stays referenced somehow
-tmp: none
+tmp: fix: none
